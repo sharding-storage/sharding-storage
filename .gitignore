@@ -1,0 +1,121 @@
+# ----------------------
+# Java
+# ----------------------
+*.class
+*.jar
+*.war
+*.ear
+*.java~
+*.kt~
+*.kts~
+
+# ----------------------
+# Gradle
+# ----------------------
+.gradle/*
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Gradle Wrapper
+gradle/wrapper/gradle-wrapper.properties
+gradle-wrapper.jar
+
+# Gradle caches and logs
+**/build/
+**/out/
+.gradle/
+.gradle-cache/
+gradle-app.setting
+
+# Ignore distribution archives
+*.zip
+*.tar.gz
+
+# Ignore local Gradle properties
+gradle.properties.local
+
+# Ignore generated JARs
+*.jar
+
+# ----------------------
+# IDEs
+# ----------------------
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+.idea_modules/
+
+# VSCode
+.vscode/
+
+# Eclipse
+.project
+.classpath
+.settings/
+bin/
+
+# NetBeans
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# Rider
+.idea/
+*.sln
+*.user
+*.suo
+
+# ----------------------
+# System Files
+# ----------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ----------------------
+# Logs and Temp Files
+# ----------------------
+*.log
+*.tmp
+*.bak
+*.swp
+*~
+
+# ----------------------
+# Test Reports and Results
+# ----------------------
+build/reports/
+build/test-results/
+
+# ----------------------
+# Artifacts and Distribution
+# ----------------------
+artifacts/
+dist/
+release/
+
+# ----------------------
+# Environment Files
+# ----------------------
+.env
+.env.*
+*.env
+*.local
+*.properties.local
+
+# ----------------------
+# Node Modules (if using frontend)
+# ----------------------
+node_modules/
+
+# ----------------------
+# Git
+# ----------------------
+.git/
+!.gitignore
