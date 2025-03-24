@@ -1,4 +1,14 @@
-public static class ConsistentHashRing<T> {
+package team.brown.sharding.hash;
+
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
+public class ConsistentHashRing<T> {
 
     private final SortedMap<Integer, T> circle = new TreeMap<>();
     private final HashFunction hashFunction;
@@ -40,10 +50,10 @@ public static class ConsistentHashRing<T> {
         @Override
         public int hash(String key) {
             try {
-                java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
-                byte[] digest = md.digest(key.getBytes());
-                return new java.math.BigInteger(1, digest).intValue();
-            } catch (java.security.NoSuchAlgorithmException e) {
+                MessageDigest md = MessageDigest.getInstance("MD5");
+                byte[] digest = md.digest(key.getBytes(StandardCharsets.UTF_8));
+                return new BigInteger(1, digest).intValue();
+            } catch (NoSuchAlgorithmException e) {
                 throw new RuntimeException("MD5 algorithm not found", e);
             }
         }
