@@ -51,7 +51,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SchemaReply'
+                $ref: '#/components/schemas/AllReply'
         default:
           description: Unexpected error
           content:
@@ -78,7 +78,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SchemaReply'
+                $ref: '#/components/schemas/AllReply'
         default:
           description: Unexpected error
           content:
@@ -105,7 +105,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SchemaReply'
+                $ref: '#/components/schemas/AllReply'
         default:
           description: Unexpected error
           content:
@@ -179,7 +179,14 @@ components:
             type: string
           description: List of schema information messages in right order of HashRing
           example: ["NODE1 ADDRESS", "NODE2 ADDRESS"]
-    
+    AllReply:
+      type: object
+      properties:
+        answer:
+          type: string
+          description: Answer of server
+          example: "done"
+
     NodeRequest:
       type: object
       properties:
