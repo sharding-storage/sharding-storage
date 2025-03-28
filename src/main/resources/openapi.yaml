@@ -1,0 +1,242 @@
+openapi: 3.0.4
+info:
+  title: Sharding Service API
+  description: API for managing sharded key-value storage
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000
+  - url: http://localhost:8001
+tags:
+  - name: main
+    description: Main-node API
+  - name: storage
+    description: Access to key-value storage
+paths:
+  /scheme:
+    get:
+      tags:
+        - main
+      summary: Refresh schema
+      description: Get schema of nodes
+      operationId: refreshSchema
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemaReply'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      tags:
+        - main
+      summary: Add a new node to the pool
+      description: Add a new node to the sharding pool
+      operationId: addNode
+      requestBody:
+        description: Node information to add
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NodeRequest'
+        required: true
+      responses:
+        '200':
+          description: Node added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllReply'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /scheme/{server}:
+    delete:
+      tags:
+        - main
+      summary: Remove a node from the pool
+      description: Remove a node from the sharding pool
+      operationId: removeNode
+      parameters:
+        - name: server
+          in: path
+          description: IP of node
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Node removed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllReply'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /shards:
+    put:
+      tags:
+        - main
+      summary: Update number of shards
+      description: Change the number of shards in the cluster
+      operationId: updateShards
+      requestBody:
+        description: New shard configuration
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShardRequest'
+        required: true
+      responses:
+        '200':
+          description: Shards updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllReply'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /storage/{key}:
+    get:
+      tags:
+        - storage
+      summary: Returns the value of key
+      description: Returns the value associated with the given key
+      operationId: getValue
+      parameters:
+        - name: key
+          in: path
+          description: key of element
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValueReply'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    put:
+      tags:
+        - storage
+      summary: Sets the value for a key
+      description: Stores a value for the given key
+      operationId: setValue
+      parameters:
+        - name: key
+          in: path
+          description: key to set
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Value to store
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KeyValueRequest'
+        required: true
+      responses:
+        '200':
+          description: Value stored successfully
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+components:
+  schemas:
+    SchemaReply:
+      type: object
+      properties:
+        nodes:
+          type: array
+          items:
+            type: string
+          description: List of schema information messages in right order of HashRing
+          example: ["NODE1 ADDRESS", "NODE2 ADDRESS"]
+    AllReply:
+      type: object
+      properties:
+        answer:
+          type: string
+          description: Answer of server
+          example: "done"
+
+    NodeRequest:
+      type: object
+      properties:
+        address:
+          type: string
+          description: Network address of the node
+          example: "http://192.168.1.10:8000"
+      required:
+        - address
+    
+    ShardRequest:
+      type: object
+      properties:
+        shardCount:
+          type: integer
+          format: int32
+          description: New number of shards for the cluster
+          example: 4
+      required:
+        - shardCount
+    
+    ValueReply:
+      type: object
+      properties:
+        value:
+          type: string
+          description: The stored value
+          example: "sample data"
+    
+    KeyValueRequest:
+      type: object
+      properties:
+        value:
+          type: string
+          description: Value to store
+          example: "new data"
+      required:
+        - value
+    
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Error code
+          example: "NODE_NOT_FOUND"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Requested node was not found in the cluster"
+      required:
+        - code
+        - message
