@@ -1,4 +1,6 @@
-package team.brown.sharding.storage;
+package team.brown.sharding.storage.node.storage;
+
+import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -6,6 +8,7 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Component
 public class KeyValueStore {
     private final ConcurrentHashMap<String, String> store;
 
