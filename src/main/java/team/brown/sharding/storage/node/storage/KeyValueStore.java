@@ -1,5 +1,6 @@
 package team.brown.sharding.storage.node.storage;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
@@ -8,6 +9,7 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 @Component
 public class KeyValueStore {
     private final ConcurrentHashMap<String, String> store;
@@ -19,11 +21,13 @@ public class KeyValueStore {
     public void setKey(String key, String value) {
         validateKey(key);
         Objects.requireNonNull(value, "Значение не может быть null");
+        log.info("Set key " + key);
         store.put(key, value);
     }
 
     public String getKey(String key) {
         validateKey(key);
+        log.info("Get key " + key);
         return store.get(key);
     }
 
