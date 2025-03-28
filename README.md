@@ -7,7 +7,7 @@
 ### Установка
 
 ```bash
-git clone <ваш-репозиторий>
+git clone https://github.com/sharding-storage/sharding-storage
 cd sharding-cluster
 chmod +x starter-cluster.sh
 ```
