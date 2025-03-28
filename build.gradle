@@ -25,11 +25,11 @@ ext {
 
 dependencies {
     // Springdoc OpenAPI UI для генерации Swagger документации
-    implementation 'org.springdoc:springdoc-openapi-ui:1.6.14'
-
     // Для поддержки аннотаций OpenAPI (если необходимо)
-    implementation 'org.springdoc:springdoc-openapi-data-rest:1.6.14'
-
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
+    implementation 'jakarta.servlet:jakarta.servlet-api:6.0.0'
     implementation 'org.springframework.boot:spring-boot-starter'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner'
