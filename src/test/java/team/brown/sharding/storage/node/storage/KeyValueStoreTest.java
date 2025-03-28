@@ -1,4 +1,4 @@
-package team.brown.sharding.storage;
+package team.brown.sharding.storage.node.storage;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
