@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  sharding-storage:
+    image: l1zail/sharding-storage:latest
+    build: .
+    container_name: sharding-storage
+    ports:
+      - "8090:8080"
+    restart: unless-stopped
+    networks:
+      - sharding-network
+
+networks:
+  sharding-network:
+    driver: bridge
