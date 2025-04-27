@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import team.brown.sharding.storage.node.storage.model.KeyValueRequest;
 
@@ -22,9 +22,9 @@ public class StorageControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private StorageService storageService;
-    @MockBean
+    @MockitoBean
     private MigrationService migrationService;
 
     @Autowired
@@ -37,7 +37,7 @@ public class StorageControllerTest {
     public void testSetValue() throws Exception {
         String key = "testKey";
         String value = "testValue";
-        KeyValueRequest request = new KeyValueRequest(value);
+        KeyValueRequest request = new KeyValueRequest(value, 1);
 
         mockMvc.perform(put("/storage/{key}", key)
                         .contentType(MediaType.APPLICATION_JSON)

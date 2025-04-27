@@ -7,5 +7,5 @@ import io.swagger.v3.oas.annotations.media.Schema;
  */
 @Schema(description = "Ответ с хранимым значением")
 public record ValueResponse(
-        @Schema(description = "Хранимое значение", example = "sample data") String value) {
+        @Schema(description = "Хранимое значение", example = "sample data") String value, int version) {
 }

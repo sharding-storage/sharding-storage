@@ -19,6 +19,14 @@ public class StorageService {
         return keyValueStore.getKey(key);
     }
 
+    public int getVersion() {
+        return keyValueStore.getVersion();
+    }
+
+    public void updateVersion(int version) {
+        keyValueStore.setVersion(version);
+    }
+
     public void put(String key, String value) {
         log.info("Put value: key={}, value={}", key, value);
         keyValueStore.setKey(key, value);

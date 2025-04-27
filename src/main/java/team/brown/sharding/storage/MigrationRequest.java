@@ -9,4 +9,5 @@ public class MigrationRequest {
     private final String targetAddress;
     private final Long startHash;
     private final Long endHash;
+    private Integer version;
 }

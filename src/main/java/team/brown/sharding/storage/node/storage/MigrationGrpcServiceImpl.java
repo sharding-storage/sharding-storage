@@ -11,13 +11,12 @@ import team.brown.sharding.storage.proto.MigrateDataRequest;
 import team.brown.sharding.storage.proto.MigrateDataResponse;
 import team.brown.sharding.storage.proto.MigrationGrpcServiceGrpc;
 
+@Slf4j
 @Service
 @GrpcService
 @RequiredArgsConstructor
-@Slf4j
 public class MigrationGrpcServiceImpl extends MigrationGrpcServiceGrpc.MigrationGrpcServiceImplBase {
 
-    private static final Logger log = LoggerFactory.getLogger(MigrationGrpcServiceImpl.class);
     private final StorageService storageService;
 
     @Override
@@ -27,6 +26,7 @@ public class MigrationGrpcServiceImpl extends MigrationGrpcServiceGrpc.Migration
             log.info("Get new data by migration: {}", request.getDataMap());
 
             storageService.putAll(request.getDataMap());
+            storageService.updateVersion(request.getVersion());
             log.info("Migration completed successfully");
             responseObserver.onNext(MigrateDataResponse.newBuilder()
                     .setSuccess(true)

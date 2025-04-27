@@ -45,11 +45,13 @@ public class MigrationService {
                     MigrationGrpcServiceGrpc.newBlockingStub(channel);
             MigrateDataRequest grpcRequest = MigrateDataRequest.newBuilder()
                     .putAllData(dataToMigrate)
+                    .setVersion(request.getVersion())
                     .build();
             MigrateDataResponse response = migrationStub.migrateData(grpcRequest);
             if (response.getSuccess()) {
                 log.info("Migration successful, removing migrated keys");
                 storageService.removeAll(keysToMigrate);
+                storageService.updateVersion(request.getVersion());
             } else {
                 log.error("Migration failed at target address: targetAddress={}", request.getTargetAddress());
                 throw new RuntimeException("Remote migration failed at " + request.getTargetAddress());

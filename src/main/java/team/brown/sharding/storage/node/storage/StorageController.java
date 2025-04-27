@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import team.brown.sharding.storage.MigrationRequest;
 import team.brown.sharding.storage.node.storage.model.KeyValueRequest;
 import team.brown.sharding.storage.node.storage.model.ValueResponse;
+import team.brown.sharding.storage.node.storage.model.VersionResponse;
 
 /**
  * Контроллер для операций получения и установки значений.
@@ -43,7 +44,7 @@ public class StorageController {
     public ValueResponse getValue(@PathVariable("key") String key) {
         log.info("Get value request: key={}", key);
         String value = storageService.get(key);
-        return new ValueResponse(value);
+        return new ValueResponse(value, storageService.getVersion());
     }
 
     /**
@@ -65,5 +66,12 @@ public class StorageController {
             request.getTargetAddress(), request.getStartHash(), request.getEndHash());
         migrationService.migrateDirectly(request);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/version")
+    public ResponseEntity<VersionResponse> getVersion() {
+        int version = storageService.getVersion();
+        log.info("Version request: {}", version);
+        return ResponseEntity.ok().body(new VersionResponse(version));
     }
 }

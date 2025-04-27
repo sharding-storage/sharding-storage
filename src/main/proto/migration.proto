@@ -7,6 +7,7 @@ option java_multiple_files = true;
 
 message MigrateDataRequest {
   map<string, string> data = 1;
+  int32 version = 2;
 }
 
 message MigrateDataResponse {
