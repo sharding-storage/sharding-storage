@@ -13,27 +13,29 @@ import team.brown.sharding.storage.proto.MigrationGrpcServiceGrpc;
 import java.util.Map;
 import java.util.Set;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class MigrationService {
 
     private final StorageService storageService;
 
     public void migrateDirectly(MigrationRequest request) {
-        log.info("Start migration: targetAddress={}, startHash={}, endHash={}", 
+        log.info("Start migration: targetAddress={}, startHash={}, endHash={}",
             request.getTargetAddress(), request.getStartHash(), request.getEndHash());
-        
+
         Set<String> keysToMigrate = storageService.getKeysInRange(request.getStartHash(), request.getEndHash());
         Map<String, String> dataToMigrate = storageService.getBulkData(keysToMigrate);
-        
+
+        log.info("Call to migrate Data: {} \n to server: {}", dataToMigrate, request.getTargetAddress());
+
         if (dataToMigrate.isEmpty()) {
             log.info("No data to migrate");
             return;
         }
-        
+
         log.info("Migrating data: keys={}", dataToMigrate.keySet());
-        
+
         ManagedChannel channel = ManagedChannelBuilder
                 .forTarget(convertToGrpcAddress(request.getTargetAddress()))
                 .usePlaintext()
@@ -43,11 +45,13 @@ public class MigrationService {
                     MigrationGrpcServiceGrpc.newBlockingStub(channel);
             MigrateDataRequest grpcRequest = MigrateDataRequest.newBuilder()
                     .putAllData(dataToMigrate)
+                    .setVersion(request.getVersion())
                     .build();
             MigrateDataResponse response = migrationStub.migrateData(grpcRequest);
             if (response.getSuccess()) {
                 log.info("Migration successful, removing migrated keys");
                 storageService.removeAll(keysToMigrate);
+                storageService.updateVersion(request.getVersion());
             } else {
                 log.error("Migration failed at target address: targetAddress={}", request.getTargetAddress());
                 throw new RuntimeException("Remote migration failed at " + request.getTargetAddress());

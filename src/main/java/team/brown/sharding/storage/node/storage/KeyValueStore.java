@@ -18,10 +18,26 @@ import java.util.stream.Collectors;
 public class KeyValueStore {
     private final ConcurrentHashMap<String, String> store;
     private final HashFunction hashFunction;
+    private int version;
 
     public KeyValueStore(HashFunction hashFunction) {
         this.store = new ConcurrentHashMap<>();
         this.hashFunction = hashFunction;
+        this.version = 1;
+    }
+
+    public int getVersion() {
+        log.info("Get version: version={}", version);
+        return version;
+    }
+
+    public void setVersion(int version) {
+        if (this.version >= version) {
+            log.info("version={} hasn't updated due to lower version", version);
+            return;
+        }
+        log.info("Update version: new version={}", version);
+        this.version = version;
     }
 
     public void setKey(String key, String value) {
