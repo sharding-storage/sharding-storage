@@ -27,18 +27,19 @@ public class KeyValueStore {
     public void setKey(String key, String value) {
         validateKey(key);
         Objects.requireNonNull(value, "Значение не может быть null");
-        log.info("Set key " + key);
+        log.info("Set key: key={}, value={}", key, value);
         store.put(key, value);
     }
 
     public String getKey(String key) {
         validateKey(key);
-        log.info("Get key " + key);
+        log.info("Get key: key={}", key);
         return store.get(key);
     }
 
     public void deleteKey(String key) {
         validateKey(key);
+        log.info("Delete key: key={}", key);
         store.remove(key);
     }
 
@@ -46,6 +47,7 @@ public class KeyValueStore {
         if (filePath == null || filePath.isBlank()) {
             throw new IllegalArgumentException("Путь к файлу не может быть null или пустым");
         }
+        log.info("Set from file: filePath={}", filePath);
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;
             while ((line = br.readLine()) != null) {
@@ -55,6 +57,7 @@ public class KeyValueStore {
                 }
             }
         } catch (IOException e) {
+            log.error("Error reading file: filePath={}, error={}", filePath, e.getMessage());
             System.err.println("Ошибка при чтении файла: " + e.getMessage());
         }
     }
@@ -66,6 +69,7 @@ public class KeyValueStore {
     }
 
     public Set<String> getKeysInRange(long startHash, long endHash) {
+        log.info("Get keys in range: startHash={}, endHash={}", startHash, endHash);
         return store.keySet().stream()
                 .filter(key -> {
                     long keyHash = hashFunction.hash(key);
@@ -76,6 +80,7 @@ public class KeyValueStore {
 
 
     public Map<String, String> getBulkData(Set<String> keys) {
+        log.info("Get bulk data: keys={}", keys);
         return keys.stream()
                 .filter(store::containsKey)
                 .collect(Collectors.toMap(k -> k, store::get));
@@ -83,13 +88,13 @@ public class KeyValueStore {
 
 
     public void removeAll(Set<String> keys) {
-        log.info("Remove keys: " + keys);
+        log.info("Remove all keys: keys={}", keys);
         keys.forEach(store::remove);
     }
 
 
     public void putAll(Map<String, String> newstore) {
-        log.info("Put keys: " + newstore.keySet());
+        log.info("Put all keys: keys={}", newstore.keySet());
         store.putAll(newstore);
     }
 
