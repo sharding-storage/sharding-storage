@@ -2,12 +2,9 @@ package team.brown.sharding.storage.node.storage;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import team.brown.sharding.storage.MigrationRequest;
 import team.brown.sharding.storage.node.storage.model.KeyValueRequest;
 import team.brown.sharding.storage.node.storage.model.ValueResponse;
 
@@ -20,9 +17,11 @@ import team.brown.sharding.storage.node.storage.model.ValueResponse;
 public class StorageController {
 
     private final StorageService storageService;
+    private final MigrationService migrationService;
 
-    public StorageController(StorageService storageService) {
+    public StorageController(StorageService storageService, MigrationService migrationService) {
         this.storageService = storageService;
+        this.migrationService = migrationService;
     }
 
     /**
@@ -48,5 +47,11 @@ public class StorageController {
     @PutMapping("/{key}")
     public void setValue(@PathVariable("key") String key, @RequestBody KeyValueRequest request) {
         storageService.put(key, request.getValue());
+    }
+
+    @PostMapping("/direct")
+    public ResponseEntity<Void> migrateDirectly(@RequestBody MigrationRequest request) {
+        migrationService.migrateDirectly( request);
+        return ResponseEntity.ok().build();
     }
 }
