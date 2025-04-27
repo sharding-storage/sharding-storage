@@ -7,6 +7,8 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.Mock;
+import team.brown.sharding.storage.node.storage.hash.HashFunction;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -22,6 +24,9 @@ public class KeyValueStoreTest {
     @TempDir
     Path tempDir;
 
+    @Mock
+    HashFunction hashFunction;
+
     @BeforeAll
     void setup() {
         System.out.println("Инициализация тестов KeyValueStore");
@@ -29,7 +34,7 @@ public class KeyValueStoreTest {
 
     @BeforeEach
     void init() {
-        store = new KeyValueStore();
+        store = new KeyValueStore(hashFunction);
     }
 
     @ParameterizedTest

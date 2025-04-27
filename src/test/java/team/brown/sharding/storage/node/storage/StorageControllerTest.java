@@ -24,6 +24,8 @@ public class StorageControllerTest {
 
     @MockBean
     private StorageService storageService;
+    @MockBean
+    private MigrationService migrationService;
 
     @Autowired
     private ObjectMapper objectMapper;

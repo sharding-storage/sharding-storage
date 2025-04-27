@@ -2,20 +2,26 @@ package team.brown.sharding.storage.node.storage;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import team.brown.sharding.storage.node.storage.hash.HashFunction;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
 public class KeyValueStore {
     private final ConcurrentHashMap<String, String> store;
+    private final HashFunction hashFunction;
 
-    public KeyValueStore() {
+    public KeyValueStore(HashFunction hashFunction) {
         this.store = new ConcurrentHashMap<>();
+        this.hashFunction = hashFunction;
     }
 
     public void setKey(String key, String value) {
@@ -56,6 +62,43 @@ public class KeyValueStore {
     private void validateKey(String key) {
         if (key == null || key.isBlank()) {
             throw new IllegalArgumentException("Ключ не может быть null или пустым");
+        }
+    }
+
+    public Set<String> getKeysInRange(long startHash, long endHash) {
+        return store.keySet().stream()
+                .filter(key -> {
+                    long keyHash = hashFunction.hash(key);
+                    return isInRange(keyHash, startHash, endHash);
+                })
+                .collect(Collectors.toSet());
+    }
+
+
+    public Map<String, String> getBulkData(Set<String> keys) {
+        return keys.stream()
+                .filter(store::containsKey)
+                .collect(Collectors.toMap(k -> k, store::get));
+    }
+
+
+    public void removeAll(Set<String> keys) {
+        log.info("Remove keys: " + keys);
+        keys.forEach(store::remove);
+    }
+
+
+    public void putAll(Map<String, String> newstore) {
+        log.info("Put keys: " + newstore.keySet());
+        store.putAll(newstore);
+    }
+
+    private boolean isInRange(long hash, long start, long end) {
+        if (start <= end) {
+            return hash >= start && hash <= end;
+        } else {
+            // Обработка кольцевого диапазона
+            return hash >= start || hash <= end;
         }
     }
 }
