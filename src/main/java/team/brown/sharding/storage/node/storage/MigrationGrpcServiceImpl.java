@@ -3,6 +3,8 @@ package team.brown.sharding.storage.node.storage;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import net.devh.boot.grpc.server.service.GrpcService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import team.brown.sharding.storage.proto.MigrateDataRequest;
 import team.brown.sharding.storage.proto.MigrateDataResponse;
@@ -13,11 +15,14 @@ import team.brown.sharding.storage.proto.MigrationGrpcServiceGrpc;
 @RequiredArgsConstructor
 public class MigrationGrpcServiceImpl extends MigrationGrpcServiceGrpc.MigrationGrpcServiceImplBase {
 
+    private static final Logger log = LoggerFactory.getLogger(MigrationGrpcServiceImpl.class);
     private final StorageService storageService;
 
     @Override
     public void migrateData(MigrateDataRequest request, StreamObserver<MigrateDataResponse> responseObserver) {
         try {
+            log.info("Get new data by migration: {}", request.getDataMap());
+
             storageService.putAll(request.getDataMap());
             responseObserver.onNext(MigrateDataResponse.newBuilder()
                     .setSuccess(true)

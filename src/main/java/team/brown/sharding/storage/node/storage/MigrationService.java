@@ -3,6 +3,7 @@ package team.brown.sharding.storage.node.storage;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import team.brown.sharding.storage.MigrationRequest;
 import team.brown.sharding.storage.proto.MigrateDataRequest;
@@ -12,6 +13,7 @@ import team.brown.sharding.storage.proto.MigrationGrpcServiceGrpc;
 import java.util.Map;
 import java.util.Set;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MigrationService {
@@ -21,6 +23,9 @@ public class MigrationService {
     public void migrateDirectly(MigrationRequest request) {
         Set<String> keysToMigrate = storageService.getKeysInRange(request.getStartHash(), request.getEndHash());
         Map<String, String> dataToMigrate = storageService.getBulkData(keysToMigrate);
+
+        log.info("Call to migrate Data: {} \n to server: {}", dataToMigrate, request.getTargetAddress());
+
         if (dataToMigrate.isEmpty()) {
             return;
         }
