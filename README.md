@@ -41,7 +41,7 @@ chmod +x starter-cluster.sh
   Чтобы увидеть, на каких портах они работают, выполните команду:
 ```docker ps -a``` 
 - Для добавления новой ноды используйте команду:
-```addServer host.docker.internal:{порт}```
+```addNode host.docker.internal:{порт}```
 
 #### Просмотр логов:
 
