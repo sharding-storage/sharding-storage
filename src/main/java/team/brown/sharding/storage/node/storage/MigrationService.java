@@ -2,16 +2,18 @@ package team.brown.sharding.storage.node.storage;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import team.brown.sharding.storage.MigrationRequest;
-import team.brown.sharding.storage.proto.MigrateDataRequest;
+import team.brown.sharding.storage.proto.MigrateDataChunk;
 import team.brown.sharding.storage.proto.MigrateDataResponse;
 import team.brown.sharding.storage.proto.MigrationGrpcServiceGrpc;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -19,6 +21,7 @@ import java.util.Set;
 public class MigrationService {
 
     private final StorageService storageService;
+    private static final int CHUNK_SIZE = 3;
 
     public void migrateDirectly(MigrationRequest request) {
         log.info("Start migration: targetAddress={}, startHash={}, endHash={}",
@@ -26,8 +29,6 @@ public class MigrationService {
 
         Set<String> keysToMigrate = storageService.getKeysInRange(request.getStartHash(), request.getEndHash());
         Map<String, String> dataToMigrate = storageService.getBulkData(keysToMigrate);
-
-        log.info("Call to migrate Data: {} \n to server: {}", dataToMigrate, request.getTargetAddress());
 
         if (dataToMigrate.isEmpty()) {
             log.info("No data to migrate");
@@ -41,24 +42,69 @@ public class MigrationService {
                 .usePlaintext()
                 .build();
         try {
-            MigrationGrpcServiceGrpc.MigrationGrpcServiceBlockingStub migrationStub =
-                    MigrationGrpcServiceGrpc.newBlockingStub(channel);
-            MigrateDataRequest grpcRequest = MigrateDataRequest.newBuilder()
-                    .putAllData(dataToMigrate)
-                    .setVersion(request.getVersion())
-                    .build();
-            MigrateDataResponse response = migrationStub.migrateData(grpcRequest);
-            if (response.getSuccess()) {
-                log.info("Migration successful, removing migrated keys");
-                storageService.removeAll(keysToMigrate);
-                storageService.updateVersion(request.getVersion());
-            } else {
-                log.error("Migration failed at target address: targetAddress={}", request.getTargetAddress());
-                throw new RuntimeException("Remote migration failed at " + request.getTargetAddress());
+            MigrationGrpcServiceGrpc.MigrationGrpcServiceStub stub = MigrationGrpcServiceGrpc.newStub(channel);
+            CountDownLatch finishLatch = new CountDownLatch(1);
+
+            StreamObserver<MigrateDataResponse> responseObserver = new StreamObserver<>() {
+                @Override
+                public void onNext(MigrateDataResponse response) {
+                    log.info("Received response: success={}", response.getSuccess());
+                    if (response.getSuccess()) {
+                        log.info("Migration successful, removing migrated keys");
+                        storageService.removeAll(keysToMigrate);
+                        storageService.updateVersion(request.getVersion());
+                    } else {
+                        log.error("Migration failed at target address: {}", request.getTargetAddress());
+                    }
+                }
+
+                @Override
+                public void onError(Throwable t) {
+                    log.error("Migration failed with error: {}", t.getMessage(), t);
+                    finishLatch.countDown();
+                }
+
+                @Override
+                public void onCompleted() {
+                    log.info("Migration stream completed");
+                    finishLatch.countDown();
+                }
+            };
+
+            StreamObserver<MigrateDataChunk> requestObserver = stub.migrateData(responseObserver);
+            for (Map<String, String> chunk : splitIntoChunks(dataToMigrate, CHUNK_SIZE)) {
+                MigrateDataChunk grpcRequest = MigrateDataChunk.newBuilder()
+                        .putAllData(chunk)
+                        .setVersion(request.getVersion())
+                        .build();
+                requestObserver.onNext(grpcRequest);
             }
+            requestObserver.onCompleted();
+
+            finishLatch.await(1, TimeUnit.MINUTES);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.error("Migration interrupted", e);
         } finally {
             channel.shutdown();
         }
+    }
+
+    private List<Map<String, String>> splitIntoChunks(Map<String, String> data, int chunkSize) {
+        List<Map<String, String>> chunks = new ArrayList<>();
+        Map<String, String> currentChunk = new HashMap<>();
+
+        for (Map.Entry<String, String> entry : data.entrySet()) {
+            currentChunk.put(entry.getKey(), entry.getValue());
+            if (currentChunk.size() >= chunkSize) {
+                chunks.add(new HashMap<>(currentChunk));
+                currentChunk.clear();
+            }
+        }
+        if (!currentChunk.isEmpty()) {
+            chunks.add(currentChunk);
+        }
+        return chunks;
     }
 
     private String convertToGrpcAddress(String restAddress) {
